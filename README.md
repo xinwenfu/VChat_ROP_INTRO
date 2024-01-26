@@ -1,4 +1,4 @@
-# Bypassing DEP with ROP \<Running instructions by reference\>
+# VChat TRUN: Bypassing DEP with ROP Intro
 
 *Notice*: The following exploit, and its procedures are based on the original [Blog](https://fluidattacks.com/blog/bypassing-dep/).
 ___
@@ -134,7 +134,7 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 
 			<img src="Images/I8.png" width=600>
 
-		2. Set a breakpoint at the desired address (Right click), in this case I chose `0x6250184E`
+		2. Set a breakpoint at the desired address (Right click), in this case I chose `0x6250508F`
 
 			<img src="Images/9.png" width=600>
 
@@ -164,7 +164,7 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 
 		<img src="Images/I8.png" width=600>
 
-	2. Set a breakpoint at the desired address (Right click), in this case I chose `0x6250184E`, the address of our `RETN` instruction
+	2. Set a breakpoint at the desired address (Right click), in this case I chose `0x6250508F`, the address of our `RETN` instruction
 
 		<img src="Images/9.png" width=600>
 
@@ -206,7 +206,7 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 
 		<img src="Images/I8.png" width=600>
 
-	2. Set a breakpoint at the desired address (Right click), in this case I chose `0x6250184E`, the address of our `RETN` instruction
+	2. Set a breakpoint at the desired address (Right click), in this case I chose `0x6250508F`, the address of our `RETN` instruction
 
 		<img src="Images/9.png" width=600>
 
