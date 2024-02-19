@@ -4,7 +4,7 @@
 ___
 This exploit will focus on the basics of [Return Oriented Programming](https://dl.acm.org/doi/10.1145/2133375.2133377), this is a technique used in buffer overflows to overcome the protections provided of non-executable memory segments provided by the [Data Execution Protection (DEP)](https://learn.microsoft.com/en-us/windows/win32/memory/data-execution-prevention) in windows. We know from [VCHAT_DEP](https://github.com/DaintyJet/VChat_DEP) that attempting to execute code within a non-executable memory segment leads to an exception being raised. However you may have noticed that we did get back to the stack when the `RETN` assembly instruction was executed, this is possible since this was code from the **code segment** of *essfunc.dll*, *vchat.exe* or some other library which are executable. This means we can by manipulating the stack to *chain* together segments of pre-existing code known as *gadgets*. These gadgets will allow us to preform exploits on machines with non-executable memory segments, they can often be used as a first stage to disable protections on the target machine to allow further exploitation.  
 
-
+**Notice**: Please setup the Windows and Linux systems as described in [SystemSetup](./SystemSetup/README.md)!
 ## Exploitation
 We will be exploiting the [TRUN](https://github.com/DaintyJet/VChat_TRUN) for simplicity, for a more detailed overview of initial analysis and exploitation of TRUN please see the writeup. 
 ### PreExploitation
