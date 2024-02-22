@@ -4,7 +4,7 @@
 ___
 This exploit will focus on the basics of [Return Oriented Programming](https://dl.acm.org/doi/10.1145/2133375.2133377), this is a technique used in buffer overflows to overcome the protections provided of non-executable memory segments provided by the [Data Execution Protection (DEP)](https://learn.microsoft.com/en-us/windows/win32/memory/data-execution-prevention) in windows. We know from [VCHAT_DEP](https://github.com/DaintyJet/VChat_DEP) that attempting to execute code within a non-executable memory segment leads to an exception being raised. However you may have noticed that we did get back to the stack when the `RETN` assembly instruction was executed, this is possible since this was code from the **code segment** of *essfunc.dll*, *vchat.exe* or some other library which are executable. This means we can by manipulating the stack to *chain* together segments of pre-existing code known as *gadgets*. These gadgets will allow us to preform exploits on machines with non-executable memory segments, they can often be used as a first stage to disable protections on the target machine to allow further exploitation.  
 
-
+**Notice**: Please setup the Windows and Linux systems as described in [SystemSetup](./SystemSetup/README.md)!
 ## Exploitation
 We will be exploiting the [TRUN](https://github.com/DaintyJet/VChat_TRUN) for simplicity, for a more detailed overview of initial analysis and exploitation of TRUN please see the writeup. 
 ### PreExploitation
@@ -104,7 +104,7 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 2. We now need to find the address of a `RETN` instruction we will inject into our stack to overwrite the original return address, this is so we can start the ROP chain. To test this we can make our exploit file reflect [exploit0.py](./SourceCode/exploit0.py) which will inject the shellcode as we have done in past exploits to observe the behavior of the `RETN` instruction.
 	1. Open VChat and attach it to the Immunity Debugger as has been done in the past, run the following command in the interpreter at the bottom.
 		```
-		!mona find -type instr -s "retn" -p 20
+		!mona find -type instr -s "retn" -p 20 -o
 		```
 		* `!mona`: Run mona.py commands
 		* `find`: Locate something withing the binary which has been loaded into Immunity debugger
@@ -115,7 +115,8 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 			* `instr`: Search for a instruction
 			* `file`: Search for a file
 		* `-s "<String>"`: Specify the string we are searching for
-		* `-p <number>`: Limit amount of output to the number we specify
+		* `-p <number>`: Limit amount of output to the number we specify (May need to increase this to find instructions at an executable location)
+		* `-o`: Omit OS Modules
 
 		<img src="Images/I7.png" width=800> 
 		
@@ -123,13 +124,13 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 
 	2. Now we can generate the assembly we previously discussed in [shellcode0.asm](./SourceCode/shellcode0.asm) using the `/usr/share/metasploit-framework/tools/exploit/nasm_shell.rb` program on the *Kali Linux* System
 
-		https://github.com/DaintyJet/VChat_ROP_INTRO/assets/60448620/c1e71572-5b80-4672-8e74-bb8644f8f0df
-		
+		<video src="ASM-1.mp4" controls title="Title"></video>
 	
 	3. Next modify the address we overwrite in the exploit code to reflect [exploit0.py](./SourceCode/exploit0.py), with the basic instructions assembled from before and observe the results 
 		
-		https://github.com/DaintyJet/VChat_ROP_INTRO/assets/60448620/275abc9d-2eae-429a-8a58-57ce53a0b4c3
+		<video src="E0.mp4" controls title="Title"></video>
 
+		
 		1. Click on the black button highlighted below, enter in the address we decided in the previous step
 
 			<img src="Images/I8.png" width=600>
@@ -144,7 +145,7 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 
 3. We can see if we write a *return address* 4-bytes after the address of the `RETN` instruction, we will once again gain control of the execution flow, so now we need to find an address for this location. Since we are unlikely to find a instruction like `ADD eax,0xabcdabba` we would be better off looking for an instruction that uses the stack to set the value of a register. Luckily we can look for a instruction like `POP EAX` followed by a `RETN`.
 
-	https://github.com/DaintyJet/VChat_ROP_INTRO/assets/60448620/a4bc17e8-d751-4fac-ab29-e644b514aed4
+	<video src="essfUNC.mp4" controls title="Title"></video>
 
 	1. Open VChat and attach it to the Immunity Debugger as has been done in the past, right click the CPU view and select *essfunc.dll*
 
@@ -158,7 +159,7 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 
 4. Now we can modify our exploit code to reflect [exploit1.py](./SourceCode/exploit1.py), and verify that the code is executed. 
 
-		https://github.com/DaintyJet/VChat_ROP_INTRO/assets/60448620/d1208007-c152-4b99-a626-0c637e90646b
+	<video src="POP-Gadget.mp4" controls title="Title"></video>
 
 	1. Click on the black button highlighted below, enter in the address we decided in the previous step
 
@@ -174,7 +175,7 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 
 5. Now we can search for a `INC EAX` instruction, after this we do not care what happens as we will have achieved the desired value `0xABCDABB9`. If we were concerned with what occurred after this, we would have simply put the `0xABCDABBA` value onto the stack and used the `RETN` value to jump to another gadget. 
 
-	https://github.com/DaintyJet/VChat_ROP_INTRO/assets/60448620/1a8d63f1-874b-46e6-a7fd-f34e1db2b2d4
+	<video src="essfUNC2.mp4" controls title="Title"></video>
 
 	1. Open VChat and attach it to the Immunity Debugger as has been done in the past, right click the CPU view and select *essfunc.dll*
 
@@ -200,7 +201,7 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 		* `-p <number>`: Limit amount of output to the number we specify
 6. Now we can add this address to our exploit as shown in [exploit2.py](./SourceCode/exploit2.py)
 
-	https://github.com/DaintyJet/VChat_ROP_INTRO/assets/60448620/108cfe13-7afa-4814-8cd2-f898a05da83a
+	<video src="INC-Gadget.mp4" controls title="Title"></video>
 
 	1. Click on the black button highlighted below, enter in the address we decided in the previous step
 
