@@ -1,10 +1,10 @@
 # VChat TRUN: Bypassing DEP with ROP Intro
 
-*Notice*: The following exploit, and its procedures are based on the original [Blog](https://fluidattacks.com/blog/bypassing-dep/).
+*Notice*: The following exploit and its procedures are based on the original [Blog](https://fluidattacks.com/blog/bypassing-dep/).
 ___
-This exploit will focus on the basics of [Return Oriented Programming](https://dl.acm.org/doi/10.1145/2133375.2133377), this is a technique used in buffer overflows to overcome the protections provided by non-executable memory segments though systems like [Data Execution Protection (DEP)](https://learn.microsoft.com/en-us/windows/win32/memory/data-execution-prevention) in Windows. We know from [VCHAT_DEP](https://github.com/DaintyJet/VChat_DEP) that attempting to execute code within a non-executable memory segment leads to an exception being raised. However you may have noticed that we did get back to the stack when the `RETN` assembly instruction was executed, this is possible since the `RETN` instruction was code from the **code/text segment** of *essfunc.dll*, *vchat.exe* or some other library which contain executable code. This means by manipulating the stack we can *chain* together segments of pre-existing code known as *gadgets*. These gadgets when properly chained together allow us to preform exploits on systems with non-executable memory segments, ROP chains can often be used as a first stage to disable protections on the target machine to allow further exploitation.  
+This exploit will focus on the basics of [Return Oriented Programming](https://dl.acm.org/doi/10.1145/2133375.2133377); this is a technique used in buffer overflows to overcome the protections provided by non-executable memory segments through systems like [Data Execution Protection (DEP)](https://learn.microsoft.com/en-us/windows/win32/memory/data-execution-prevention) in Windows. We know from [VCHAT_DEP](https://github.com/DaintyJet/VChat_DEP) that attempting to execute code within a non-executable memory segment leads to an exception being raised. However, you may have noticed that we did get back to the stack when the `RETN` assembly instruction was executed. This is possible since the `RETN` instruction was code from the **code/text segment** of *essfunc.dll*, *vchat.exe*, or some other library that contains executable code. This means by manipulating the stack, we can *chain* together segments of pre-existing code known as *gadgets*. These gadgets when properly chained together allow us to preform exploits on systems with non-executable memory segments, ROP chains can often be used as a first stage to disable protections on the target machine to allow further exploitation.  
 
-**Notice**: Please setup the Windows and Linux systems as described in [SystemSetup](./SystemSetup/README.md)!
+**Notice**: Please set up the Windows and Linux systems as described in [SystemSetup](./SystemSetup/README.md)!
 ## Exploitation
 We will be exploiting the [TRUN](https://github.com/DaintyJet/VChat_TRUN) command for simplicity, for a more detailed overview of initial analysis and exploitation of TRUN please see the writeup. 
 ### PreExploitation
@@ -12,11 +12,11 @@ We will be exploiting the [TRUN](https://github.com/DaintyJet/VChat_TRUN) comman
 
 	<img src="Images/I1.png" width=800> 
 
-    * Note that you may need to launch it as the *Administrator* this is done by right clicking the icon found in the Windows search bar or on the desktop as shown below:
+    * Note that you may need to launch it as the *Administrator* this is done by right-clicking the icon found in the Windows search bar or on the desktop as shown below:
 			
 	<img src="Images/I1b.png" width = 200>
 
-2. Attach VChat: There are Two options! 
+2. Attach VChat: There are two options! 
    1. When the VChat is already Running: 
         1. Click File -> Attach
 
@@ -35,7 +35,7 @@ We will be exploiting the [TRUN](https://github.com/DaintyJet/VChat_TRUN) comman
 
 			<img src="Images/I3-2.png" width=800>
 
-        3. Notice that a Terminal was opened when you clicked "Open" Now you should see the program output.
+        3. Notice that a Terminal was opened when you clicked "Open" now you should see the program output.
 
 			<img src="Images/I3-3.png" width=800>
 
@@ -45,22 +45,22 @@ We will be exploiting the [TRUN](https://github.com/DaintyJet/VChat_TRUN) comman
 
 ### Exploitation
 #### What is Return Oriented Programming (ROP)
-Before going into the exploitation process, we should understand what Return Oriented Programming (ROP) is, and how we preform an attack using the ROP method. This not only requires knowledge of how the stack works, and the basics of assembly used so far, but a better understanding of how *function calls* and *returns* work. The exact conventions used differ from architecture to architecture, however the basic principles if not the [complexity](https://dl.acm.org/doi/10.1145/3545948.3545997) are maintained.
+Before going into the exploitation process, we should understand what Return Oriented Programming (ROP) is and how we perform an attack using the ROP method. This not only requires knowledge of how the stack works and the basics of assembly used so far, but a better understanding of how *function calls* and *returns* work. The exact conventions used differ from architecture to architecture, however the basic principles if not the [complexity](https://dl.acm.org/doi/10.1145/3545948.3545997) are maintained.
 
 **Understanding function calls**
-Generally the end goal of a ROP chain is to call a function, often to configure the current process to enable further exploitation, this could be disabling protections, or even setting up a remote shell or socket. Function calls and their characteristics differ from architecture to architecture. Generally they need to setup the arguments for the target function; this could be pushing values to the stack or loading values into specific registers. In the case of the 32-bit x86 architecture our VChat server runs on to make a function call we need to push all of the arguments for the function onto the stack as has been done in the previous exploits.
+Generally the end goal of a ROP chain is to call a function, often to configure the current process to enable further exploitation, this could be disabling protections, or even setting up a remote shell or socket. Function calls and their characteristics differ from architecture to architecture. Generally, they need to set up the arguments for the target function; this could be pushing values to the stack or loading values into specific registers. In the case of the 32-bit x86 architecture our VChat server runs on, to make a function call, we need to push all of the arguments for the function onto the stack as has been done in the previous exploits.
 
-For example if we have made a function call to `recv(SOCKET s, char* buff, int len, int flags)` in the [VChat_KSTET_MULTI](https://github.com/DaintyJet/VChat_KSTET_Multi) shellcode, we will have created the following stack once the call instruction has been executed.
+For example, if we have made a function call to `recv(SOCKET s, char* buff, int len, int flags)` in the [VChat_KSTET_MULTI](https://github.com/DaintyJet/VChat_KSTET_Multi) shellcode, we will have created the following stack once the call instruction has been executed.
 
 <img src="Images/I4.png" width=800>
 
-We have highlighted the function arguments in orange, the return address in red and the base pointer which is used to access the function arguments and local variables is highlighted in purple. The return address, old ebp, and local variables are created at the time of, or after the call instruction has been executed. 
+We have highlighted the function arguments in orange, the return address in red, and the base pointer, which is used to access the function arguments and local variables is highlighted in purple. The return address, old ebp, and local variables are created at the time of or after the call instruction has been executed. 
 
-We need to setup the stack for function calls, in the x86 architecture as all the function arguments are located on the stack, this is not too difficult as a buffer overflow vulnerability often directly writes to the stack; in the case of a ROP attack we may find writing to registers and saving those onto the stack with a *gadget* an easier method too to prevent us from mangling the ROP chain. If we were on a different architecture such as x86-64 where registers store some of the function arguments this may make the ROP chains more complicated. When we enter into the function the *prolog* will save the old `EBP` (Base pointer) value on the stack for us, so all we need to be concerned with after loading the arguments onto the stack is the return address that the function will return to on completion allowing us to chain calls together. If we are able to build the stack in such a way, we can chain together functions and more often *gadgets* by the return values we placed onto the stack.
+We need to set up the stack for function calls in the x86 architecture as all the function arguments are located on the stack, this should not be too difficult as a buffer overflow vulnerability often directly writes to the stack; in the case of a ROP attack, we may find writing to registers and saving those onto the stack with a *gadget* an easier method too to prevent us from mangling the ROP chain. If we were on a different architecture, such as x86-64, where registers store some of the function arguments, this may make the ROP chains more complicated. When we enter into the function the *prolog* will save the old `EBP` (Base pointer) value on the stack for us, so all we need to be concerned with after loading the arguments onto the stack is the return address that the function will return to on completion allowing us to chain calls together. If we are able to build the stack in such a way, we can chain together functions and, more often, *gadgets* by the return values we place onto the stack.
 
 
 **Understanding returns**
-Function returns are slightly more complicated than they may first appear, they do use the `RETN` instruction to revert the control flow back to the caller, or in our case change the control flow to an address we specify, before this the function resets the stack pointer to clear the local variables, and will reset the base pointer so the caller function is able to access it's arguments and local variables. The *callee* does not remove the arguments placed on the stack, we would need to locate a *gadget* to clean up these arguments and be the links between each step in the chain we are creating.``
+Function returns are slightly more complicated than they may first appear, they do use the `RETN` instruction to revert the control flow back to the caller or, in our case, change the control flow to an address we specify before the function resets the stack pointer to clear the local variables, and will reset the base pointer so the caller function is able to access it's arguments and local variables. The *callee* does not remove the arguments placed on the stack, we would need to locate a *gadget* to clean up these arguments and be the links between each step in the chain we are creating.``
 
 Below is and example function epilog, in addition to a before and after image of a stack for the `recv(SOCKET s, char* buff, int len, int flags)` function. 
 ```s
@@ -75,14 +75,14 @@ retn            ; Jump to the return address that has been placed on the stack (
 
 <img src="Images/I5.png" width=800>
 
-* *Note*: The values on the stack from the previous call are still there after the `RET` instruction, however once the `ESP` is adjusted to be above those values we can consider them for the most part removed as future operations on the stack will overwrite them. If the program were to exit or preform any additional operations on the stack it is possible those values could remain for some time.  
+* *Note*: The values on the stack from the previous call are still there after the `RET` instruction. However once the `ESP` is adjusted to be above those values, we can consider them, for the most part, removed as future operations on the stack will overwrite them. If the program were to exit or preform any additional operations on the stack it is possible those values could remain for some time.  
 
-We could create a chain such as the following to preform the recv call, and then return control flow back to the stack. This is idealized for simplicity, generally these chains are more complex and rather than directly calling a function after loading arguments onto the stack and then using a series of pop instructions to clear them, more often than not we will build the arguments and future addresses further down the stack by loading them into registers and pushing them onto the stack, later using those created values to call the target function.  
+We could create a chain such as the following to perform the recv call and then return control flow back to the stack. This is idealized for simplicity, generally these chains are more complex, and rather than directly calling a function after loading arguments onto the stack and then using a series of pop instructions to clear them, more often than not we will build the arguments and future addresses further down the stack by loading them into registers and pushing them onto the stack, later using those created values to call the target function.  
 
 
 <img src="Images/I6.png" width=800> 
 
-The above image shows an idealized ROP chain, where we setup the stack such that we call the `recv` function first with a return address to a ROP gadget with the following signature:
+The above image shows an idealized ROP chain, where we set up the stack such that we call the `recv` function first with a return address to a ROP gadget with the following signature:
 ```
 pop eax
 pop eax
@@ -96,7 +96,7 @@ This allows us to return control flow to shell code injected after our ROP Gadge
 #### ROP By Hand
 Now we will generate a ROP chain by hand, hopefully this will provide greater clarity as to how ROP chains work, and how we can construct them. First we will need to have a goal, in this case we should load a specific value into a register. If we are able to do this we can eventually do a full exploit (Often with the help of some tools!). We will attempt to write the value `0xabcdabba` into a register, as it is commonly used the `EAX` register is a good choice, as convention is that the return value of a function is stored in the `EAX` register so gadgets like the command `POP EAX`followed by a `RETN` are not impossible to find.
 
-1. We first need to plan out the shell code we want to execute in order to preform this operation, below is a simple set of assembly instructions we could have used in previous exploits:
+1. We first need to plan out the shell code we want to execute in order to perform this operation, below is a simple set of assembly instructions we could have used in previous exploits:
 	```
 	xor eax, eax           ; Clear out the EAX register, we do not know what may be stored there 
 	add eax, 0xabcdabb9    ; Add set eax = 0 + 0xabcdabb9 (One off from the goal so we can make the chain more interesting)
@@ -113,10 +113,10 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 			* `asc`: Search for an asci string.
 			* `bin`: Search for a binary string.
 			* `ptr`: Search for a pointer (memory address).
-			* `instr`: Search for a instruction.
+			* `instr`: Search for an instruction.
 			* `file`: Search for a file.
 		* `-s "<String>"`: Specify the string we are searching for.
-		* `-p <number>`: Limit amount of output to the number we specify (May need to increase this to find instructions at an executable location).
+		* `-p <number>`: Limit the amount of output to the number we specify (We may need to increase this to find instructions at an executable location).
 		* `-o`: Omit OS modules.
 
 		<img src="Images/I7.png" width=800> 
@@ -144,7 +144,7 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 
 			<img src="Images/I10.png" width=600>
 
-3. We can see if we write a *return address* 4-bytes after the address of the `RETN` instruction, we will once again gain control of the execution flow, so now we need to find an address for this location. Since we are unlikely to find a instruction like `ADD eax,0xabcdabba` we would be better off looking for an instruction that uses the stack to set the value of a register. Luckily we can look for a instruction like `POP EAX` followed by a `RETN`.
+3. We can see if we write a *return address* 4-bytes after the address of the `RETN` instruction, we will once again gain control of the execution flow, so now we need to find an address for this location. Since we are unlikely to find an instruction like `ADD eax,0xabcdabba` we would be better off looking for an instruction that uses the stack to set the value of a register. Luckily, we can look for an instruction like `POP EAX` followed by a `RETN`.
 
 	<video src="essfUNC.mp4" controls title="Title"></video>
 
@@ -152,7 +152,7 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 
 		<img src="Images/I11.png" width=600>
 
-	2. Use the `CTL+S` keybind to open the command sequence search option and search for the `POP EAX` and `RETN` sequence.
+	2. Use the `CTL+S` keybind to open the command sequence search option and search for the `POP EAX` and `RETN` sequences.
 
 		<img src="Images/I12.png" width=600>
 
@@ -182,7 +182,7 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 
 		<img src="Images/I11.png" width=600>
 
-	2. Use the `CTL+S` keybind to open the command sequence search option and search for the `POP EAX` and `RETN` sequence.
+	2. Use the `CTL+S` keybind to open the command sequence search option and search for the `POP EAX` and `RETN` sequences.
 
 		<img src="Images/I14.png" width=600>
 
@@ -196,23 +196,23 @@ Now we will generate a ROP chain by hand, hopefully this will provide greater cl
 			* `asc`: Search for an asci string.
 			* `bin`: Search for a binary string.
 			* `ptr`: Search for a pointer (memory address).
-			* `instr`: Search for a instruction.
+			* `instr`: Search for an instruction.
 			* `file`: Search for a file.
 		* `-s "<String>"`: Specify the string we are searching for.
-		* `-p <number>`: Limit amount of output to the number we specify.
+		* `-p <number>`: Limit the amount of output to the number we specify.
 6. Now we can add this address to our exploit as shown in [exploit2.py](./SourceCode/exploit2.py)
 
 	<video src="INC-Gadget.mp4" controls title="Title"></video>
 
-	1. Click on the black button highlighted below, and enter in the address we decided earlier.
+	1. Click on the black button highlighted below and enter the address we decided on earlier.
 
 		<img src="Images/I8.png" width=600>
 
-	2. Set a breakpoint at the desired address (Right click), in this case I chose `0x6250508F`, the address of our `RETN` instruction.
+	2. Set a breakpoint at the desired address (right-click), in this case I chose `0x6250508F`, the address of our `RETN` instruction.
 
 		<img src="Images/9.png" width=600>
 
-	3. Observe the flow of control, we should first return to the `POP EAX`, and `RETN` sequence. And then due to the address we have place onto the stack we should jump to the `INC EAX` instruction. 
+	3. Observe the flow of control, we should first return to the `POP EAX`, and `RETN` sequence. And then, due to the address we have placed onto the stack, we should jump to the `INC EAX` instruction. 
 
 		<img src="Images/15.png" width=600>
 
@@ -235,7 +235,7 @@ This code uses the [GNU C Inline-Assembly](https://gcc.gnu.org/onlinedocs/gcc/Ex
 
 
 ## Test code
-1. [exploit0.py](./SourceCode/exploit0.py): This code preforms an overflow jumping to a `RETN` instruction.
+1. [exploit0.py](./SourceCode/exploit0.py): This code performs an overflow jumping to a `RETN` instruction.
 2. [exploit1.py](./SourceCode/exploit1.py): This code adds a gadget containing a `POP EAX` and `RETN` instruction to the chain.
 3. [exploit2.py](./SourceCode/exploit2.py): This code adds an instruction `INC EAX` to the chain.
 
