@@ -252,11 +252,11 @@ The mitigations we will be using in the following examination are:
 ---
 |Mitigation Level|Defenses|
 |-|-|
-|No Effect|Address Space Layout Randomization, SafeSEH, SEHOP, Heap Integrity Validation, and Control Flow Guard (CFG) |
+|No Effect|Data Execution Prevention (DEP), Address Space Layout Randomization, SafeSEH, SEHOP, Heap Integrity Validation, and Control Flow Guard (CFG) |
 |Partial Mitigation|Address Space Layout Randomization|
 |Full Mitigation|Buffer Security Checks (GS) |
 * `Defense: Buffer Security Check (GS)`: This mitigation strategy proves effective against stack based buffer overflows that overwrite the return address or arguments of a function. This is because the randomly generated security cookie is placed before the return address and it's integrity is validated before the return address is loaded into the `EIP` register. As the security cookie is placed before the return address in order for us to overflow the return address we would have to corrupt the security cookie allowing us to detect the overflow.
-* `Defense: Data Execution Prevention (DEP)`: This mitigation strategy proves effective against stack based buffer overflows that attempt to **directly execute** shellcode located on the stack as this would raise an exception.
+* `Defense: Data Execution Prevention (DEP)`: ROP chains bypass the DEP protections and is therefore not effective.
 * `Defense: Address Space Layout Randomization (ASLR)`: This defense partially mitigates this attack as it may randomize the addresses gadgets used in the ROP chain are located at. When enabled this may be bypassed if all addresses are in external dependencies such as DLLs which may not have their addresses randomized between executions unless the system reboots.
 * `Defense: SafeSEH`: This does not affect our exploit as we do not leverage Structured Exception Handling.
 * `Defense: SEHOP`: This does not affect our exploit as we do not leverage Structured Exception Handling.
