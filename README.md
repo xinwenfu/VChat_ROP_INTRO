@@ -140,11 +140,11 @@ Now we will generate a ROP chain by hand, this will hopefully provide greater cl
 
 	2. Now we can generate the assembly we previously discussed in [shellcode0.asm](./SourceCode/shellcode0.asm) using the `/usr/share/metasploit-framework/tools/exploit/nasm_shell.rb` program on the *Kali Linux* system.
 
-		<video src="ASM-1.mp4" controls title="Title"></video>
+		https://github.com/user-attachments/assets/b32db3c5-0c81-4ff9-95f3-5ca7e60a5121
 
 	3. Next modify the address we overwrite in the exploit code to reflect [exploit0.py](./SourceCode/exploit0.py), with the basic instructions assembled from before and observe the results.
 
-		<video src="E0.mp4" controls title="Title"></video>
+		https://github.com/user-attachments/assets/42fb9fb9-8293-4b94-b9cc-3fcc0a484c7d
 
 		1. Click on the black button highlighted below, and enter the address we decided in the previous step.
 
@@ -160,7 +160,8 @@ Now we will generate a ROP chain by hand, this will hopefully provide greater cl
 
 3. We can see if we write a *return address* 4-bytes after the address of the `RETN` instruction, we will once again gain control of the execution flow, so now we need to find an address for this location. Since we are unlikely to find an instruction like `ADD eax,0xabcdabba`, we would be better off looking for an instruction that uses the stack to set the value of a register. Luckily, we can look for an instruction like `POP EAX` followed by a `RETN`.
 
-	<video src="essfUNC.mp4" controls title="Title"></video>
+	https://github.com/user-attachments/assets/bf6b245b-7248-41f2-96bf-eb8c226e4767
+
 
 	1. Open VChat and attach it to the Immunity Debugger as has been done in the past, right click the CPU view and select *essfunc.dll*.
 
@@ -174,7 +175,7 @@ Now we will generate a ROP chain by hand, this will hopefully provide greater cl
 
 4. Now we can modify our exploit code to reflect [exploit1.py](./SourceCode/exploit1.py) and verify that the code is executed.
 
-	<video src="POP-Gadget.mp4" controls title="Title"></video>
+	https://github.com/user-attachments/assets/bcdfbe11-4651-4293-adfa-35b1f980c09a
 
 	1. Click on the black button highlighted below, and enter in the address we decided earlier.
 
@@ -190,7 +191,7 @@ Now we will generate a ROP chain by hand, this will hopefully provide greater cl
 
 5. Now we can search for an `INC EAX` instruction. After this, we do not care what happens as we will have achieved the desired value `0xABCDABB9`. If we were concerned with what occurred after this, we would have simply put the `0xABCDABBA` value onto the stack and used the `RETN` value to jump to another gadget. 
 
-	<video src="essfUNC2.mp4" controls title="Title"></video>
+	https://github.com/user-attachments/assets/e4312d62-0598-4f76-9520-38e9d5310a55
 
 	1. Open VChat and attach it to the Immunity Debugger, as you have in the past. Right-click the CPU view and select *essfunc.dll*.
 
@@ -216,7 +217,7 @@ Now we will generate a ROP chain by hand, this will hopefully provide greater cl
 		* `-p <number>`: Limit the amount of output to the number we specify.
 6. Now we can add this address to our exploit as shown in [exploit2.py](./SourceCode/exploit2.py)
 
-	<video src="INC-Gadget.mp4" controls title="Title"></video>
+	https://github.com/user-attachments/assets/03f9628a-4795-4c4f-a57e-c18f7d96a9d5
 
 	1. Click on the black button highlighted below, and enter in the address we decided earlier.
 
