@@ -111,6 +111,9 @@ We will be exploiting the [TRUN](https://github.com/DaintyJet/VChat_TRUN) comman
 ## Exploit: ROP By Hand
 Now we will generate a ROP chain by hand, this will hopefully provide greater clarity as to how a ROP chain works, and how we can construct them. First we will need to have a goal, in this case we should load a specific value into a register so we can see clearly if our "exploit" has succeeded. If we are able to do this, we can eventually do a full exploit (Often with the help of some tools!). We will attempt to write the value `0xabcdabba` into a register, as it is commonly used. The `EAX` register is a good choice for this, as the convention on x86 systems is that the return value of a function is stored in the `EAX` register gadgets like the command `POP EAX` followed by a `RETN` are not impossible to find.
 
+> [!IMPORTANT]
+> The offsets and addresses shown in the following screenshots may differ from those used in the python and ruby code in this repository. This is because the offsets change slightly between the Windows 10 version of VChat compiled with GCC and the Windows 11 version compiled with the Visual Studio compiler.
+
 1. We first need to plan out the shell code we want to execute in order to perform this operation; below is a simple set of assembly instructions we could have used in previous exploits:
 	```
 	xor eax, eax           ; Clear out the EAX register, we do not know what may be stored there
