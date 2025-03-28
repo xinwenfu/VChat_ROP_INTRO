@@ -55,7 +55,7 @@ retn            ; Jump to the return address that has been placed on the stack (
 We could create a chain such as the following to perform the recv call and then return the control flow back to the stack. This is **idealized** for simplicity, generally, these chains are more complex and rather than directly calling a function after loading arguments onto the stack and then using a series of pop instructions to clear them, more often than not, we will build the arguments and target addresses further down the stack by loading them into registers and pushing them onto the stack, later using those created values to call the target function.
 
 
-<img src="Images/I6.png" width=800>
+<img src="Images/I6.png" width=400>
 
 The above image shows an idealized ROP chain, where we set the stack such that we call the `recv` function first with a return address to a ROP gadget with the following signature:
 ```
