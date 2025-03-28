@@ -24,7 +24,7 @@ For example if we have made a function call to `recv(SOCKET s, char* buff, int l
 > [!NOTE]
 > In a x86-64, 64-bit architecture, these arguments would need to be stored on the stack, which increases complexity as additional gadgets are required to do these operations, which increases complexity.
 
-<img src="Images/I4.png" width=800>
+<img src="Images/I4.png" width=400>
 
 We have highlighted the function arguments in orange, the return address in red and the base pointer which is used to access the function arguments and local variables is highlighted in purple. The return address, old ebp, and local variables are created at the time of, or after the call instruction has been executed.
 
