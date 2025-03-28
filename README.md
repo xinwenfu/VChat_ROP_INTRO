@@ -47,7 +47,7 @@ leave           ; Adjust the ESP register to point to EBP, and load the old EBP 
 retn            ; Jump to the return address that has been placed on the stack (ESP)
 ```
 
-<img src="Images/I5.png" width=400>
+<img src="Images/I5.png" width=600>
 
 > [!NOTE]
 > The values on the stack from the previous call are still there after the `RET` instruction. However, once the `ESP` is adjusted to be above those values, we can consider them removed for the most part, as future operations on the stack will overwrite them. If the program were to exit or perform any additional operations on the stack, it is possible those values could remain for some time.
